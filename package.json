@@ -1,0 +1,20 @@
+{
+  "name": "dgx-boss",
+  "version": "1.0.0",
+  "description": "DGx Boss - VIP AI Workspace & Unified OpenAI Compatible Proxy",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "dgx",
+    "ai",
+    "proxy",
+    "chat"
+  ],
+  "author": "DGx Unlimited",
+  "license": "MIT"
+}
