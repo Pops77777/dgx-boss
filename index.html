@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://js.puter.com/v2/"></script>
+  <script src="https://dgx-cloud.onrender.com/dgx-connect.js" data-project="DGx Boss"></script>
   <style>
     /* Premium Multi-Theme Engine */
     :root, [data-theme="cyber"] {
@@ -1007,6 +1008,11 @@
           <option value="gold">🌅 Midnight Gold</option>
         </select>
 
+        <button class="btn-api-studio" id="btn-dgx-cloud-auth" onclick="if(window.DGxConnect) DGxConnect.signInWithGoogle();" style="background: rgba(66, 133, 244, 0.15); border-color: rgba(66, 133, 244, 0.35); color: #93c5fd;" title="DGx Cloud Google Login & Sync">
+          <span id="dgx-cloud-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;"></span>
+          <span id="dgx-cloud-btn-label">Cloud Sync</span>
+        </button>
+
         <button class="btn-api-studio" id="btn-open-studio">
           <span>🔑</span> DGx API Studio
         </button>
@@ -1250,6 +1256,9 @@ OPENAI_MODEL=claude-opus-5.5</span>
       const t = e.target.value;
       document.documentElement.setAttribute('data-theme', t);
       localStorage.setItem('dgx_theme', t);
+      if (window.DGxConnect && typeof window.DGxConnect.saveData === 'function') {
+        window.DGxConnect.saveData('theme', t).catch(() => {});
+      }
     });
 
     // State
@@ -1324,6 +1333,9 @@ OPENAI_MODEL=claude-opus-5.5</span>
     function saveChats() {
       localStorage.setItem('dgx_chats', JSON.stringify(chats));
       renderHistoryList();
+      if (window.DGxConnect && typeof window.DGxConnect.saveData === 'function') {
+        window.DGxConnect.saveData('chats', chats).catch(() => {});
+      }
     }
 
     function renderHistoryList(filter = '') {
@@ -1452,6 +1464,13 @@ OPENAI_MODEL=claude-opus-5.5</span>
         imgTrayName.textContent = currentImageName + ` (${(file.size / 1024).toFixed(1)} KB)`;
         imgTray.classList.add('active');
         promptInput.focus();
+
+        // Auto sync file to DGx Cloud if user is signed in
+        if (window.DGxConnect && typeof window.DGxConnect.uploadFile === 'function' && window.DGxConnect.currentUser) {
+          window.DGxConnect.uploadFile(file).then(up => {
+            if (up && up.url) console.log("DGx Cloud File Uploaded:", up.url);
+          }).catch(err => console.warn("DGx Cloud upload skipped:", err));
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -1722,7 +1741,12 @@ OPENAI_MODEL=claude-opus-5.5</span>
 
       row.appendChild(wrap);
       chatContainer.appendChild(row);
-      if (autoScroll) chatContainer.scrollTop = chatContainer.scrollHeight;
+      if (autoScroll) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        if (text && window.DGxConnect && typeof window.DGxConnect.logChat === 'function') {
+          window.DGxConnect.logChat(text, role).catch(() => {});
+        }
+      }
       return row;
     }
 
@@ -1933,6 +1957,9 @@ OPENAI_MODEL=claude-opus-5.5`;
     }
     function saveDgxKeys(keys) {
       localStorage.setItem('dgx_api_keys', JSON.stringify(keys));
+      if (window.DGxConnect && typeof window.DGxConnect.saveData === 'function') {
+        window.DGxConnect.saveData('dgx_api_keys', keys).catch(() => {});
+      }
     }
 
     if (getDgxKeys().length === 0) {
@@ -1989,9 +2016,71 @@ OPENAI_MODEL=claude-opus-5.5`;
       renderDgxKeys();
     };
 
+    // DGx Cloud Universal Auth & Cloud Sync Integration
+    function initDGxConnectSync() {
+      if (!window.DGxConnect) return;
+
+      const cloudBtn = document.getElementById('btn-dgx-cloud-auth');
+      const cloudDot = document.getElementById('dgx-cloud-dot');
+      const cloudLabel = document.getElementById('dgx-cloud-btn-label');
+
+      DGxConnect.onAuthStateChanged((user) => {
+        if (user) {
+          console.log("DGx Cloud Google User:", user.email, user.name);
+          if (cloudLabel) cloudLabel.textContent = user.name ? user.name.split(' ')[0] : 'Synced';
+          if (cloudDot) cloudDot.style.background = '#10b981';
+          if (cloudBtn) cloudBtn.title = `Connected to DGx Cloud as ${user.email}`;
+
+          // Restore cloud state if available
+          if (user.data) {
+            let stateUpdated = false;
+            if (user.data.chats && Array.isArray(user.data.chats) && user.data.chats.length > 0) {
+              const localIds = new Set(chats.map(c => c.id));
+              let added = false;
+              user.data.chats.forEach(cloudChat => {
+                if (!localIds.has(cloudChat.id)) {
+                  chats.push(cloudChat);
+                  added = true;
+                }
+              });
+              if (added) {
+                localStorage.setItem('dgx_chats', JSON.stringify(chats));
+                stateUpdated = true;
+              }
+            } else if (chats.length > 0) {
+              // First time cloud sync: upload existing local chats to cloud
+              DGxConnect.saveData('chats', chats).catch(() => {});
+            }
+
+            if (user.data.theme && user.data.theme !== themeSelector.value) {
+              themeSelector.value = user.data.theme;
+              document.documentElement.setAttribute('data-theme', user.data.theme);
+              localStorage.setItem('dgx_theme', user.data.theme);
+            }
+
+            if (user.data.dgx_api_keys && Array.isArray(user.data.dgx_api_keys)) {
+              localStorage.setItem('dgx_api_keys', JSON.stringify(user.data.dgx_api_keys));
+              renderDgxKeys();
+            }
+
+            if (stateUpdated) {
+              renderHistoryList();
+              renderCurrentChat();
+            }
+          }
+        } else {
+          console.log("DGx Cloud: No user signed in");
+          if (cloudLabel) cloudLabel.textContent = 'Cloud Sync';
+          if (cloudDot) cloudDot.style.background = '#38bdf8';
+          if (cloudBtn) cloudBtn.title = 'Click to Sign In with Google & Sync';
+        }
+      });
+    }
+
     // Initial render
     renderCurrentChat();
     renderHistoryList();
+    initDGxConnectSync();
   </script>
 </body>
 </html>
