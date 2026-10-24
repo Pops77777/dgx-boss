@@ -313,7 +313,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Gemini / Android Studio Studio Bot responses endpoint (/v1/responses)
+  // OpenAI Responses API & Gemini responses endpoint (/v1/responses)
   if ((pathname === '/v1/responses' || pathname === '/responses') && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk);
@@ -321,9 +321,24 @@ const server = http.createServer(async (req, res) => {
       try {
         const parsed = JSON.parse(body || '{}');
         const model = parsed.model || 'claude-opus-5.5';
-        let msgs = parsed.messages || [];
-        if (parsed.contents) {
-          // Gemini contents format
+
+        let msgs = [];
+        if (typeof parsed.input === 'string') {
+          msgs = [{ role: 'user', content: parsed.input }];
+        } else if (Array.isArray(parsed.input)) {
+          msgs = parsed.input.map(item => {
+            if (typeof item === 'string') return { role: 'user', content: item };
+            if (item.content) {
+              const text = Array.isArray(item.content)
+                ? item.content.map(c => c.text || JSON.stringify(c)).join('\n')
+                : String(item.content);
+              return { role: item.role || 'user', content: text };
+            }
+            return { role: 'user', content: JSON.stringify(item) };
+          });
+        } else if (parsed.messages && Array.isArray(parsed.messages)) {
+          msgs = parsed.messages;
+        } else if (parsed.contents) {
           msgs = parsed.contents.map(c => ({
             role: c.role === 'model' ? 'assistant' : 'user',
             content: (c.parts || []).map(p => p.text || '').join('\n')
@@ -334,19 +349,44 @@ const server = http.createServer(async (req, res) => {
 
         const content = await callUpstreamWorker(msgs, model);
 
+        const respId = 'resp_' + Math.random().toString(36).substring(2);
+        const itemId = 'item_' + Math.random().toString(36).substring(2);
+
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
         res.end(JSON.stringify({
+          id: respId,
+          object: 'response',
+          created_at: Math.floor(Date.now() / 1000),
+          status: 'completed',
+          model: model,
+          output: [
+            {
+              id: itemId,
+              type: 'message',
+              status: 'completed',
+              role: 'assistant',
+              content: [
+                {
+                  type: 'output_text',
+                  text: content
+                }
+              ]
+            }
+          ],
+          choices: [{
+            index: 0,
+            message: { role: 'assistant', content: content },
+            finish_reason: 'stop'
+          }],
           candidates: [{
-            content: {
-              parts: [{ text: content }],
-              role: "model"
-            },
+            content: { parts: [{ text: content }], role: "model" },
             finishReason: "STOP",
             index: 0
           }],
-          usageMetadata: { promptTokenCount: 0, candidatesTokenCount: 0, totalTokenCount: 0 }
+          usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
         }));
       } catch (err) {
+        console.error("Error in /v1/responses:", err.message);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: err.message }));
       }
@@ -360,6 +400,7 @@ const server = http.createServer(async (req, res) => {
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
       try {
+        fs.writeFileSync(path.join(__dirname, 'last_agent_request.json'), body, 'utf8');
         const parsed = JSON.parse(body || '{}');
         let model = parsed.model;
         if (!model) {
