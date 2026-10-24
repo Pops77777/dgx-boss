@@ -38,17 +38,40 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Models Endpoint
-  if (pathname === '/v1/models' && req.method === 'GET') {
-    const models = [
-      "gpt-6-astra", "claude-opus-5.5", "claude-sonnet-5",
-      "sol", "terra", "claude-fable-5.1", "glm-5.2", "kimi-k3", "dgx-image-flux"
-    ];
+  // Models Endpoints (OpenAI, LM Studio & Ollama formats for Android Studio AI)
+  const modelsList = [
+    "claude-opus-5.5", "gpt-6-astra", "claude-sonnet-5",
+    "sol", "terra", "claude-fable-5.1", "glm-5.2", "kimi-k3", "dgx-image-flux"
+  ];
+
+  if ((pathname === '/v1/models' || pathname === '/models') && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify({
       object: 'list',
-      data: models.map(m => ({ id: m, object: 'model', owned_by: 'dgx-unlimited' }))
+      data: modelsList.map(m => ({ id: m, object: 'model', owned_by: 'dgx-boss' }))
     }));
+    return;
+  }
+
+  // Ollama format tags (Used by Android Studio native AI)
+  if (pathname === '/api/tags' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({
+      models: modelsList.map(m => ({
+        name: m,
+        model: m,
+        modified_at: new Date().toISOString(),
+        size: 4000000000,
+        digest: "sha256:" + m.replace(/[^a-z0-9]/g, ''),
+        details: { format: "gguf", family: "dgx", parameter_size: "70B", quantization_level: "Q4_K_M" }
+      }))
+    }));
+    return;
+  }
+
+  if (pathname === '/api/version' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ version: "0.4.1" }));
     return;
   }
 
@@ -131,12 +154,26 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Direct internal API endpoint (/api/chat)
+  // Direct API endpoint (/api/chat - handles both webapp and Android Studio Ollama format)
   if (pathname === '/api/chat' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
       try {
+        let parsed = {};
+        try { parsed = JSON.parse(body || '{}'); } catch {}
+
+        const model = parsed.modelId || parsed.model || 'claude-opus-5.5';
+        const isOllama = !!parsed.model && !parsed.modelId;
+
+        const workerPayload = {
+          messages: parsed.messages || [{ role: 'user', content: parsed.prompt || '' }],
+          modelId: model,
+          thinking: !!parsed.thinking,
+          deepSearch: !!parsed.deepSearch,
+          stream: false
+        };
+
         const response = await fetch('https://allaitools-generate.freemodels.workers.dev/api/chat', {
           method: 'POST',
           headers: {
@@ -144,11 +181,71 @@ const server = http.createServer(async (req, res) => {
             'Origin': 'https://rusherai.com',
             'Referer': 'https://rusherai.com/'
           },
-          body: body
+          body: JSON.stringify(workerPayload)
         });
-        const data = await response.text();
+
+        const workerData = await response.json().catch(() => ({}));
+        const content = workerData.content || (workerData.choices && workerData.choices[0] && workerData.choices[0].message ? workerData.choices[0].message.content : (typeof workerData === 'string' ? workerData : ''));
+
+        if (isOllama) {
+          res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({
+            model: model,
+            created_at: new Date().toISOString(),
+            message: { role: 'assistant', content: content },
+            done: true
+          }));
+          return;
+        }
+
         res.writeHead(response.status, { 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(data);
+        res.end(JSON.stringify(workerData));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // Ollama /api/generate endpoint for Android Studio
+  if (pathname === '/api/generate' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+      try {
+        const parsed = JSON.parse(body || '{}');
+        const model = parsed.model || 'claude-opus-5.5';
+        const prompt = parsed.prompt || '';
+
+        const workerPayload = {
+          messages: [{ role: 'user', content: prompt }],
+          modelId: model,
+          thinking: false,
+          deepSearch: false,
+          stream: false
+        };
+
+        const response = await fetch('https://allaitools-generate.freemodels.workers.dev/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Origin': 'https://rusherai.com',
+            'Referer': 'https://rusherai.com/'
+          },
+          body: JSON.stringify(workerPayload)
+        });
+
+        const workerData = await response.json().catch(() => ({}));
+        const content = workerData.content || (workerData.choices && workerData.choices[0] && workerData.choices[0].message ? workerData.choices[0].message.content : '');
+
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({
+          model: model,
+          created_at: new Date().toISOString(),
+          response: content,
+          done: true
+        }));
       } catch (err) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: err.message }));
