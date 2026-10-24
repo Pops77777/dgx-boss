@@ -57,15 +57,36 @@ async function callUpstreamWorker(messages, modelId, thinking = false, deepSearc
       body: JSON.stringify(payload)
     });
 
-    const data = await response.json().catch(() => ({}));
+    const raw = await response.text();
     let content = '';
-    if (typeof data.content === 'string') {
-      content = data.content;
-    } else if (data.choices && data.choices[0] && data.choices[0].message) {
-      content = data.choices[0].message.content || '';
-    } else if (typeof data === 'string') {
-      content = data;
+
+    if (raw.includes('data:')) {
+      const lines = raw.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('data:') && !trimmed.includes('[DONE]')) {
+          const jsonStr = trimmed.replace(/^data:\s*/, '');
+          try {
+            const parsed = JSON.parse(jsonStr);
+            if (parsed.choices && parsed.choices[0]) {
+              const delta = parsed.choices[0].delta || parsed.choices[0].message || {};
+              content += (delta.content || '');
+            } else if (parsed.content) {
+              content += parsed.content;
+            }
+          } catch (e) {}
+        }
+      }
+    } else {
+      try {
+        const parsed = JSON.parse(raw);
+        content = parsed.content || (parsed.choices && parsed.choices[0] && parsed.choices[0].message ? parsed.choices[0].message.content : raw);
+      } catch {
+        content = raw;
+      }
     }
+
+    if (!content) content = 'No response generated. Please retry.';
     console.log(`[Worker Success] Model: ${cleanModel}, Length: ${content.length}`);
     return content;
   } catch (err) {
@@ -319,6 +340,7 @@ const server = http.createServer(async (req, res) => {
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
       try {
+        fs.writeFileSync(path.join(__dirname, 'last_responses_request.json'), body, 'utf8');
         const parsed = JSON.parse(body || '{}');
         const model = parsed.model || 'claude-opus-5.5';
 
@@ -501,3 +523,13 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`DGx Boss Server listening on http://127.0.0.1:${PORT}`);
 });
+
+if (Number(PORT) !== 11434) {
+  try {
+    const aiServer = http.createServer((req, res) => server.emit('request', req, res));
+    aiServer.listen(11434, () => {
+      console.log(`DGx Boss AI Provider listening on http://127.0.0.1:11434`);
+    });
+    aiServer.on('error', (e) => console.log('AI Port 11434 note:', e.message));
+  } catch {}
+}
