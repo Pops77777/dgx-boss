@@ -1,19 +1,35 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="cyber">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://dgx-cloud.onrender.com/dgx-connect.js" data-project="auto" data-gatekeeper="true"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <script src="https://dgx-cloud.onrender.com/dgx-connect.js" data-project="DGx Boss" data-auto-button="false"></script>
   <title>DGx Boss - VIP AI Workspace</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100' height='100' rx='24' fill='%23090d16' stroke='%23a371f7' stroke-width='6'/%3E%3Ctext x='50' y='65' font-family='sans-serif' font-weight='900' font-size='34' fill='%2300f0ff' text-anchor='middle'%3EDGx%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://js.puter.com/v2/"></script>
   <style>
     /* Premium Multi-Theme Engine */
-    :root, [data-theme="cyber"] {
+    :root, [data-theme="light"] {
+      --bg-base: #f8fafc;
+      --bg-sidebar: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f1f5f9;
+      --border: #e2e8f0;
+      --border-glow: rgba(99, 102, 241, 0.25);
+      --primary-accent: #6366f1;
+      --secondary-accent: #0284c7;
+      --vip-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+      --user-gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    [data-theme="cyber"] {
       --bg-base: #06080d;
       --bg-sidebar: #0b0f17;
       --bg-card: rgba(18, 24, 38, 0.75);
@@ -97,14 +113,28 @@
     ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.28); }
 
-    /* Fix Windows Chrome Dropdown Option Visibility */
+    /* Theme-Adaptive Dropdowns */
     select, option, .model-pill-select, .model-pill-select option, .theme-selector, .theme-selector option {
+      background-color: var(--bg-card);
+      color: var(--text-main);
+    }
+    [data-theme="light"] select, [data-theme="light"] option,
+    [data-theme="light"] .model-pill-select, [data-theme="light"] .model-pill-select option,
+    [data-theme="light"] .theme-selector, [data-theme="light"] .theme-selector option {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+    [data-theme="cyber"] select, [data-theme="cyber"] option,
+    [data-theme="cyber"] .model-pill-select, [data-theme="cyber"] .model-pill-select option,
+    [data-theme="cyber"] .theme-selector, [data-theme="cyber"] .theme-selector option,
+    [data-theme="matrix"] select, [data-theme="matrix"] option,
+    [data-theme="ocean"] select, [data-theme="ocean"] option,
+    [data-theme="gold"] select, [data-theme="gold"] option {
       background-color: #0c101a !important;
       color: #ffffff !important;
     }
     option {
-      background-color: #0c101a !important;
-      color: #ffffff !important;
       padding: 10px 14px;
     }
 
@@ -170,8 +200,8 @@
       transition: all 0.2s;
     }
     .btn-icon:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
+      background: var(--bg-card-hover);
+      color: var(--text-main);
     }
 
     .btn-sidebar-new {
@@ -235,14 +265,15 @@
       border: 1px solid transparent;
     }
     .history-pill:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--bg-card-hover);
       color: var(--text-main);
     }
     .history-pill.active {
       background: var(--bg-card);
-      border-color: var(--border-glow);
-      color: #fff;
-      font-weight: 600;
+      border-color: var(--primary-accent);
+      color: var(--text-main);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
     .history-title {
       white-space: nowrap;
@@ -339,7 +370,7 @@
     .btn-api-studio {
       background: var(--bg-card);
       border: 1px solid var(--border-glow);
-      color: #fff;
+      color: var(--text-main);
       border-radius: 8px;
       padding: 6px 14px;
       cursor: pointer;
@@ -422,7 +453,7 @@
       transform: translateY(-2px);
     }
     .prompt-tile-icon { font-size: 1.2rem; margin-bottom: 4px; }
-    .prompt-tile-text { font-size: 0.86rem; color: #e2e8f0; font-weight: 500; }
+    .prompt-tile-text { font-size: 0.86rem; color: var(--text-main); font-weight: 500; }
 
     /* Chat Messages */
     .msg-row {
@@ -930,6 +961,140 @@
       padding: 12px 14px;
       margin-bottom: 10px;
     }
+    /* Typewriter Blinking Cursor */
+    .typewriter-cursor {
+      display: inline-block;
+      color: var(--secondary-accent);
+      animation: cursorBlink 0.6s infinite;
+      margin-left: 3px;
+      font-weight: 900;
+      vertical-align: baseline;
+    }
+    @keyframes cursorBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Mobile Drawer Backdrop */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .sidebar-backdrop.active {
+      display: block;
+      opacity: 1;
+    }
+
+    /* Mobile Responsive Optimizations */
+    @media (max-width: 1024px), (hover: none) and (pointer: coarse) {
+      html { font-size: 14px; }
+      body { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+      #sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 290px !important;
+        max-width: 82vw !important;
+        z-index: 1000 !important;
+        box-shadow: 10px 0 35px rgba(0, 0, 0, 0.45) !important;
+        transform: translateX(0);
+        margin-left: 0 !important;
+        will-change: transform;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      #sidebar.collapsed {
+        transform: translateX(-100%) !important;
+        pointer-events: none !important;
+      }
+
+      #main-view {
+        width: 100vw !important;
+        min-width: 100vw !important;
+        max-width: 100vw !important;
+        flex: 1 0 100vw !important;
+        overflow-x: hidden !important;
+      }
+
+      header {
+        padding: 8px 10px !important;
+      }
+      #btn-open-studio {
+        display: none !important;
+      }
+      .theme-selector {
+        padding: 5px 8px !important;
+        font-size: 0.72rem !important;
+        max-width: 115px;
+      }
+      #btn-dgx-cloud-auth {
+        padding: 5px 8px !important;
+        font-size: 0.72rem !important;
+      }
+      #btn-top-new {
+        padding: 5px 8px !important;
+        font-size: 0.75rem !important;
+      }
+
+      .chat-messages {
+        padding: 12px 10px !important;
+      }
+      .msg-row {
+        padding: 6px 4px !important;
+        gap: 8px !important;
+      }
+      .msg-avatar {
+        width: 28px !important;
+        height: 28px !important;
+      }
+      .msg-avatar svg {
+        width: 28px !important;
+        height: 28px !important;
+      }
+      .msg-bubble-wrap {
+        max-width: 88% !important;
+      }
+      .msg-bubble {
+        padding: 10px 14px !important;
+        font-size: 0.92rem !important;
+        line-height: 1.55 !important;
+      }
+
+      footer {
+        padding: 8px 10px !important;
+      }
+      .vip-input-capsule {
+        padding: 8px 10px !important;
+        border-radius: 14px !important;
+      }
+      textarea {
+        font-size: 0.88rem !important;
+      }
+      .capsule-tools {
+        flex-wrap: wrap !important;
+        gap: 5px !important;
+      }
+      .model-pill-select {
+        font-size: 0.72rem !important;
+        padding: 3px 6px !important;
+      }
+      .tool-btn-pill {
+        font-size: 0.7rem !important;
+        padding: 3px 6px !important;
+      }
+      .btn-send {
+        width: 32px !important;
+        height: 32px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -986,6 +1151,7 @@
       </div>
     </div>
   </aside>
+  <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
 
   <!-- Main View -->
   <div id="main-view">
@@ -1001,7 +1167,8 @@
 
       <div class="header-right">
         <!-- Multi-Theme Selector -->
-        <select class="theme-selector" id="theme-selector" title="Select Luxury Theme">
+        <select class="theme-selector" id="theme-selector" title="Select Theme">
+          <option value="light" selected>☀️ Pure Light (Default)</option>
           <option value="cyber">🌌 Cyber Violet</option>
           <option value="matrix">🟢 Matrix Emerald</option>
           <option value="ocean">🔵 Deep Ocean</option>
@@ -1246,9 +1413,9 @@ OPENAI_MODEL=claude-opus-5.5</span>
   </div>
 
   <script>
-    // Theme Engine
+    // Theme Engine (Default Pure Light Theme)
     const themeSelector = document.getElementById('theme-selector');
-    const savedTheme = localStorage.getItem('dgx_theme') || 'cyber';
+    const savedTheme = localStorage.getItem('dgx_theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
     themeSelector.value = savedTheme;
 
@@ -1260,6 +1427,9 @@ OPENAI_MODEL=claude-opus-5.5</span>
         window.DGxConnect.saveData('theme', t).catch(() => {});
       }
     });
+
+    // Mobile / Touch Detection Helper
+    const isMobileMode = () => window.innerWidth <= 1024 || (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
 
     // State
     let chats = JSON.parse(localStorage.getItem('dgx_chats') || '[]');
@@ -1297,15 +1467,37 @@ OPENAI_MODEL=claude-opus-5.5</span>
     const imgTrayName = document.getElementById('img-tray-name');
     const btnTrayClose = document.getElementById('btn-tray-close');
 
-    // Sidebar Toggle
-    btnOpenSidebar.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
-    btnCloseSidebar.addEventListener('click', () => sidebar.classList.add('collapsed'));
+    // Sidebar Mobile Drawer Controls
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    function openSidebar() {
+      sidebar.classList.remove('collapsed');
+      if (sidebarBackdrop && isMobileMode()) sidebarBackdrop.classList.add('active');
+    }
+    function closeSidebar() {
+      sidebar.classList.add('collapsed');
+      if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+    }
+    btnOpenSidebar.addEventListener('click', () => {
+      if (sidebar.classList.contains('collapsed')) {
+        openSidebar();
+      } else {
+        closeSidebar();
+      }
+    });
+    btnCloseSidebar.addEventListener('click', closeSidebar);
+    if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeSidebar);
+
+    // Auto collapse sidebar by default on mobile / touch screens
+    if (isMobileMode()) {
+      sidebar.classList.add('collapsed');
+    }
 
     btnTopNew.addEventListener('click', startNewChat);
     btnSidebarNew.addEventListener('click', startNewChat);
 
     function startNewChat() {
       if (isGenerating && abortController) abortController.abort();
+      if (isMobileMode()) closeSidebar();
       currentChatId = 'chat_' + Date.now();
       localStorage.setItem('dgx_active_chat_id', currentChatId);
       clearAttachedImage();
@@ -1356,6 +1548,7 @@ OPENAI_MODEL=claude-opus-5.5</span>
       localStorage.setItem('dgx_active_chat_id', currentChatId);
       renderCurrentChat();
       renderHistoryList();
+      if (isMobileMode()) closeSidebar();
     };
 
     window.deleteChat = function(e, id) {
@@ -1490,6 +1683,53 @@ OPENAI_MODEL=claude-opus-5.5</span>
       sendUserMessage();
     }
 
+    async function callAiApi(messages, modelId, thinking, deepSearch, signal) {
+      // 1. Try Pollinations OpenAI endpoint (instant response, multi-model)
+      try {
+        const model = (modelId || '').toLowerCase().includes('claude') ? 'claude-hybrid' :
+                      (modelId || '').toLowerCase().includes('deepseek') ? 'deepseek' : 'openai';
+        const pollRes = await fetch('https://text.pollinations.ai/openai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: messages.map(m => ({ role: m.role, content: m.content })),
+            model: model,
+            stream: false
+          }),
+          signal: signal
+        });
+        if (pollRes.ok) {
+          const data = await pollRes.json();
+          if (data.choices && data.choices[0] && data.choices[0].message) {
+            return data.choices[0].message.content;
+          }
+        }
+      } catch (e) {
+        console.warn('Pollinations OpenAI error:', e);
+      }
+
+      // 2. Try raw text Pollinations
+      try {
+        const rawRes = await fetch('https://text.pollinations.ai/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: messages.map(m => ({ role: m.role, content: m.content }))
+          }),
+          signal: signal
+        });
+        if (rawRes.ok) {
+          const text = await rawRes.text();
+          if (text && text.trim()) return text;
+        }
+      } catch (e) {
+        console.warn('Pollinations raw error:', e);
+      }
+
+
+      throw new Error('AI engines unavailable. Please check your internet connection.');
+    }
+
     async function sendUserMessage() {
       const text = promptInput.value.trim();
       const attachedImage = currentImageData;
@@ -1540,30 +1780,8 @@ OPENAI_MODEL=claude-opus-5.5</span>
 
         // Async multi-engine generator
         (async () => {
-          let resolvedUrl = null;
-
-          // Engine 1: Puter.js (No rate limits, high quality cloud AI)
-          try {
-            if (typeof puter !== 'undefined' && puter.ai && puter.ai.txt2img) {
-              if (puter.auth && !puter.auth.isSignedIn()) {
-                await puter.auth.signIn({ attempt_temp_user_creation: true }).catch(() => {});
-              }
-              const puterPromise = puter.ai.txt2img(imgPrompt);
-              const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject('timeout'), 9000));
-              const puterImg = await Promise.race([puterPromise, timeoutPromise]);
-              if (puterImg && puterImg.src) {
-                resolvedUrl = puterImg.src;
-              }
-            }
-          } catch (err) {
-            console.warn('Puter.js fallback to Turbo:', err);
-          }
-
-          // Engine 2: Pollinations Turbo with model=turbo (bypasses heavy compute limit)
-          if (!resolvedUrl) {
-            const seed = Math.floor(Math.random() * 900000 + 100000);
-            resolvedUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?model=turbo&width=1024&height=1024&nologo=true&seed=${seed}`;
-          }
+          const seed = Math.floor(Math.random() * 900000 + 100000);
+          const resolvedUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?model=turbo&width=1024&height=1024&nologo=true&seed=${seed}`;
 
           const preloadImg = new Image();
           preloadImg.onload = () => {
@@ -1593,33 +1811,18 @@ OPENAI_MODEL=claude-opus-5.5</span>
       abortController = new AbortController();
 
       try {
-        const payload = {
-          messages: chat.messages.map(m => ({ role: m.role, content: m.content })),
-          modelId: modelSelect.value,
-          thinking: thinkingToggle.checked,
-          deepSearch: deepsearchToggle.checked,
-          stream: false
-        };
-
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          signal: abortController.signal
-        });
-
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(errText || `Server responded with ${res.status}`);
-        }
-
-        const data = await res.json();
-        const reply = data.content || (data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : 'No content received.');
+        const reply = await callAiApi(
+          chat.messages,
+          modelSelect.value,
+          thinkingToggle.checked,
+          deepsearchToggle.checked,
+          abortController.signal
+        );
 
         typingEl.remove();
         chat.messages.push({ role: 'assistant', content: reply });
         saveChats();
-        appendMessage('assistant', reply, null, true);
+        await streamTypewriterMessage(reply);
 
       } catch (err) {
         typingEl.remove();
@@ -1633,6 +1836,105 @@ OPENAI_MODEL=claude-opus-5.5</span>
         abortController = null;
         promptInput.focus();
       }
+    }
+
+    function streamTypewriterMessage(fullText) {
+      return new Promise((resolve) => {
+        const row = document.createElement('div');
+        row.className = 'msg-row assistant';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'msg-avatar';
+        avatar.innerHTML = `
+          <svg class="dgx-brand-logo" style="width:34px;height:34px;" viewBox="0 0 100 100" fill="none">
+            <rect x="2" y="2" width="96" height="96" rx="22" fill="#090d16" stroke="url(#logoGrad)" stroke-width="4"/>
+            <text x="50" y="64" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" font-size="34" fill="url(#logoGrad)" text-anchor="middle" letter-spacing="-1">DGx</text>
+          </svg>
+        `;
+        row.appendChild(avatar);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'msg-bubble-wrap';
+
+        const auth = document.createElement('div');
+        auth.className = 'msg-author-header';
+        auth.innerHTML = `
+          <span class="msg-author-name">DGx Boss</span>
+          <span class="vip-tag">👑 PRO AI</span>
+        `;
+        wrap.appendChild(auth);
+
+        const bubble = document.createElement('div');
+        bubble.className = 'msg-bubble';
+
+        const textEl = document.createElement('div');
+        bubble.appendChild(textEl);
+        wrap.appendChild(bubble);
+        row.appendChild(wrap);
+        chatContainer.appendChild(row);
+
+        const chunks = fullText.split(/(\s+)/);
+        let currentText = '';
+        let i = 0;
+        let tick = 0;
+
+        const timer = setInterval(() => {
+          if (i >= chunks.length) {
+            clearInterval(timer);
+            try {
+              textEl.innerHTML = marked.parse(fullText);
+            } catch (e) {
+              textEl.textContent = fullText;
+            }
+            textEl.querySelectorAll('pre').forEach(pre => {
+              const code = pre.querySelector('code');
+              const lang = (code && code.className ? code.className.replace('language-', '') : '') || 'code';
+              const wrapper = document.createElement('div');
+              wrapper.className = 'code-block-wrapper';
+              wrapper.innerHTML = `
+                <div class="code-header">
+                  <span>${lang}</span>
+                  <button class="btn-copy-code" onclick="copyCodeBlock(this)">📋 Copy</button>
+                </div>
+              `;
+              pre.parentNode.insertBefore(wrapper, pre);
+              wrapper.appendChild(pre);
+            });
+
+            const actions = document.createElement('div');
+            actions.className = 'msg-action-bar';
+            actions.innerHTML = `
+              <button class="action-pill" onclick="copyBubbleText(this)">📋 Copy</button>
+              <button class="action-pill" onclick="readAloud(this)">🔊 Read</button>
+              <button class="action-pill" onclick="retryLast()">🔄 Retry</button>
+            `;
+            wrap.appendChild(actions);
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            if (window.DGxConnect && typeof window.DGxConnect.logChat === 'function') {
+              window.DGxConnect.logChat(fullText, 'assistant').catch(() => {});
+            }
+            resolve();
+            return;
+          }
+
+          const chunk = chunks[i];
+          currentText += chunk;
+          const isBreak = chunk.includes('\n');
+          i++;
+          tick++;
+
+          // Lag-free rendering: parse markdown on newlines or every 3 tokens
+          if (tick % 3 === 0 || isBreak || i >= chunks.length) {
+            try {
+              textEl.innerHTML = marked.parse(currentText) + '<span class="typewriter-cursor">▌</span>';
+            } catch (e) {
+              textEl.textContent = currentText;
+            }
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+          }
+        }, 18);
+      });
     }
 
     function appendMessage(role, text, imageSrc = null, autoScroll = true, generatedImgUrl = null, generatedImgPrompt = null) {
@@ -1813,25 +2115,18 @@ OPENAI_MODEL=claude-opus-5.5</span>
         const typingEl = appendTypingIndicator();
         abortController = new AbortController();
 
-        fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: chat.messages.map(m => ({ role: m.role, content: m.content })),
-            modelId: modelSelect.value,
-            thinking: thinkingToggle.checked,
-            deepSearch: deepsearchToggle.checked,
-            stream: false
-          }),
-          signal: abortController.signal
-        })
-        .then(r => r.json())
-        .then(data => {
+        callAiApi(
+          chat.messages,
+          modelSelect.value,
+          thinkingToggle.checked,
+          deepsearchToggle.checked,
+          abortController.signal
+        )
+        .then(async reply => {
           typingEl.remove();
-          const reply = data.content || 'No content received.';
           chat.messages.push({ role: 'assistant', content: reply });
           saveChats();
-          appendMessage('assistant', reply, null, true);
+          await streamTypewriterMessage(reply);
         })
         .catch(err => {
           typingEl.remove();
